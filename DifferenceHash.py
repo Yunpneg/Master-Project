@@ -1,18 +1,17 @@
+from keras.preprocessing.image import load_img, img_to_array
 import os
-from PIL import Image
 import numpy as np
-import matplotlib.pyplot as plt
+from PIL import Image
+
 
 class DHash(object):
     @staticmethod
     def calculate_hash(image):
         """
-        Calculate the difference hash of images
         :param image: PIL.Image
-        :return: dHash,string format
+        :return: dHash,string
         """
         difference = DHash.__difference(image)
-        # Convert to Hex
         decimal_value = 0
         hash_string = ""
         for index, value in enumerate(difference):
@@ -26,22 +25,19 @@ class DHash(object):
     @staticmethod
     def hamming_distance(first, second):
         """
-        Calculate the Hamming distance between two images
-        :param first: dHash(str)
+        :param first:dHash(str)
         :param second: dHash(str)
-        :return: hamming distance. The value is more larger, the difference between two images is bigger
+        :return: hamming distance.
         """
         if isinstance(first, str):
             return DHash.__hamming_distance_with_hash(first, second)
-
 
     @staticmethod
     def __difference(image):
         """
         *Private method*
-        Calculate the difference of pixels for images
         :param image: PIL.Image
-        :return: consisting of 1 and 0
+        :return: 0 and 1
         """
         resize_width = 9
         resize_height = 8
@@ -50,7 +46,6 @@ class DHash(object):
         # 2. Grayscale
         grayscale_image = smaller_image.convert("L")
 
-        # 3. compare with neighboring pixel
         pixels = list(grayscale_image.getdata())
         difference = []
         for row in range(resize_height):
@@ -64,25 +59,34 @@ class DHash(object):
     def __hamming_distance_with_hash(dhash1, dhash2):
         """
         *Private method*
-        Calculate the hamming distance based on dHash
+        hamming distance
         :param dhash1: str
         :param dhash2: str
-        :return: Hamming distance (int)
+        :return: (int)
         """
         difference = (int(dhash1, 16)) ^ (int(dhash2, 16))
         return bin(difference).count("1")
 
 
-
+# file path we want to test
 dirname_path = 'test_data'
-true_label = []
+# Get total number of images
+count = 0
+for root, dirs, files in os.walk(dirname_path):
+    for each in files:
+        if each != '.DS_Store':
+            count += 1
+images_array = np.zeros((count, 224, 224, 3))
+
+t = 0
 path_list = []
-file_list = []
+true_label = [] # Ground Truth list
+name_list = []  # file name list
 dir_path_list = os.listdir(dirname_path)
 if '.DS_Store' in dir_path_list:
     dir_path_list.remove('.DS_Store')
 dir_path_list.sort()
-class_item = 0
+class_item = 0  # index of category
 for dirname in dir_path_list:
     file_path = dirname_path + '/' + dirname
     file_path_list = os.listdir(file_path)
@@ -91,13 +95,19 @@ for dirname in dir_path_list:
     file_path_list.sort()
     for filename in file_path_list:
         img_path = file_path + '/' + filename
-        file_list.append(filename)
+        name_list.append(filename)
         true_label.append(class_item)
         path_list.append(img_path)
-    class_item += 1
+        # load the images
+        image = load_img(img_path, target_size=(224, 224, 3))
+        image = img_to_array(image)  # shape is (224,224,3)
+        images_array[t] = image  # (224, 224, 3). float64
+        t += 1
 
+    class_item += 1  # category number
+# create 9 lists to contain the index of normal flower and the index of eight types of mutant flower.
 normal_index = []
-mutation_index =[]
+image_index =[]
 mutation_index_1 =[]
 mutation_index_2 =[]
 mutation_index_3 =[]
@@ -117,56 +127,56 @@ mutation_index_5.append([t for t, x in enumerate(true_label) if x == 5])
 # mutation_index_7.append([t for t, x in enumerate(true_label) if x == 7])
 # mutation_index_8.append([t for t, x in enumerate(true_label) if x == 8])
 
-mutation_index.append(mutation_index_1)
-mutation_index.append(mutation_index_2)
-mutation_index.append(mutation_index_3)
-mutation_index.append(mutation_index_4)
-mutation_index.append(mutation_index_5)
+image_index.append(normal_index)
+image_index.append(mutation_index_1)
+image_index.append(mutation_index_2)
+image_index.append(mutation_index_3)
+image_index.append(mutation_index_4)
+image_index.append(mutation_index_5)
 # mutation_index.append(mutation_index_6)
 # mutation_index.append(mutation_index_7)
 # mutation_index.append(mutation_index_8)
 
-
-whole_same_list = []
-for t in range(len(mutation_index)):
-    mutation_file_list = []
-    same_list = []
-    for i in mutation_index[t][0]:
-        same = 0
-        num = 0
-        image01 = Image.open(path_list[i])
+# Difference Hash
+# The average distance of intra-class
+intra_distance = []
+for i in range(len(image_index)):
+    single_sample = []
+    for j in image_index[i][0]:
+        num_1 = 0
+        ave_distance = 0
+        image01 = Image.open(path_list[j])
         dHash_mutation = DHash.calculate_hash(image01)
-        mutation_file_list.append(file_list[i])
-        for j in normal_index[0]:
-            image02 = Image.open(path_list[j])
-            dHash_normal = DHash.calculate_hash(image02)
-            same += DHash.hamming_distance(dHash_mutation, dHash_normal)
-            num += 1
+        for k in image_index[i][0]:
+            if j != k:
+                num_1 += 1
+                image02 = Image.open(path_list[k])
+                dHash_normal = DHash.calculate_hash(image02)
+                ave_distance += DHash.hamming_distance(dHash_mutation, dHash_normal)
+        single_sample.append(ave_distance / num_1)
+    intra_distance.append(int(sum(single_sample)) / len(single_sample))
+intra_ave_feature = int(sum(intra_distance)) / len(intra_distance)
+print("Intra_class average distance for Difference Hash", ("%.2f" % intra_ave_feature))
 
-        same_list.append(float("%.2f" % (same / num)))
-
-    whole_same_list.append(same_list)
-    print("file name", mutation_file_list)
-
-print("Difference between mutation and normal flower: ", whole_same_list)
-
-
-# Baseline
-base_list = []
-for i in normal_index[0]:
-    image01 = Image.open(path_list[i])
-    dHash_mutation = DHash.calculate_hash(image01)
-    base = 0
-    num_ = 0
-    for j in normal_index[0]:
-        if i != j:
-            image02 = Image.open(path_list[j])
-            dHash_normal = DHash.calculate_hash(image02)
-            base += DHash.hamming_distance(dHash_mutation, dHash_normal)
-            num_ += 1
-    base_list.append(float(base/num_))
-ave_base = "%.2f" % (int(sum(base_list))/len(base_list))
-
-print("baseline", ave_base)
-
-
+# The average distance of Inter-class
+inter_distance = []
+for i in range(len(image_index)):
+    single_sample = []
+    for j in image_index[i][0]:
+        num_2 = 0
+        ave_distance = 0
+        index = 0
+        image01 = Image.open(path_list[j])
+        dHash_mutation = DHash.calculate_hash(image01)
+        while index < len(image_index):
+            if index != i:
+                for k in image_index[index][0]:
+                    num_2 += 1
+                    image02 = Image.open(path_list[k])
+                    dHash_normal = DHash.calculate_hash(image02)
+                    ave_distance += DHash.hamming_distance(dHash_mutation, dHash_normal)
+            index += 1
+        single_sample.append(ave_distance / num_2)
+    inter_distance.append(int(sum(single_sample)) / len(single_sample))
+inter_ave_feature = int(sum(inter_distance)) / len(inter_distance)
+print("Inter_class average distance for Difference Hash", ("%.2f" % inter_ave_feature))
