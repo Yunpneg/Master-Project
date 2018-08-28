@@ -40,7 +40,5 @@ This projce include three parts: Classification, Difference Measure for Images a
 
 3.2.2 Classifier Vectors
 
-3.2.3 Average Hash
-
-3.2.4 Difference Hash
+3.2.3 Average Hash + Difference Hash
 
