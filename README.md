@@ -10,15 +10,13 @@ This projce include three parts: Classification, Difference Measure for Images a
 
 2 Difference Measure
 
-2.1 Raw Images
+2.1 Raw Images and Feature Vectors
 
-2.2 Feature Vectors
+2.2 Classifier Vectors
 
-2.3 Classifier Vectors
+2.3 Average Hash
 
-2.4 Average Hash
-
-2.5 Difference Hash
+2.4 Difference Hash
 
 
 3 Evaluation
