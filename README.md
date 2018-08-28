@@ -2,7 +2,9 @@
 This projce include three parts: Classification, Difference Measure for Images and Evaluation.
 
 1 Classification
+
 1.1 Re-train VGG16 model to get the optimal weights
+
 1.2 Classification for Images
 
 2 Difference Measure
