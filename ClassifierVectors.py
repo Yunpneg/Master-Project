@@ -28,7 +28,7 @@ inputShape = (224, 224) # Assumes 3 channel image
 dirname_path = 'test_data'
 
 count = 0
-for root,dirs,files in os.walk(dirname_path):    #遍历统计
+for root,dirs,files in os.walk(dirname_path):    
     for each in files:
         if each != '.DS_Store':
             count += 1
