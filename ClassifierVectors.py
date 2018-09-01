@@ -120,7 +120,7 @@ for t in range(len(mutation_index)):
         sig_ave_feature.append(float("%.8f" % (ave_dis_feature / num_1)))
     whole_ave_feature.append(sig_ave_feature)
     print("file name: ", mutation_list)
-print("eight mutant groups, average, feature vectors: ", whole_ave_feature)
+print("Five mutant groups, average, feature vectors: ", whole_ave_feature)
 
 # Baseline
 normal_ave_feature = []
