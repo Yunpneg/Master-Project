@@ -17,11 +17,11 @@ x = GlobalAveragePooling2D()(x)
 x = Dense(512, activation="relu")(x)
 x = Dropout(0.3)(x)
 x = Dense(512, activation="relu")(x)
-predictions = Dense(9, activation='softmax')(x)
+predictions = Dense(6, activation='softmax')(x)
 model = Model(inputs=base_model.input, outputs=predictions)
 
 # Load the trained weights by Pre-trained VGG16 model
-model.load_weights("GAP_D_Drop_D_D.h5")
+model.load_weights("GAP_D_Drop_D_D_6.h5")
 
 inputShape = (224, 224) # Assumes 3 channel image
 
